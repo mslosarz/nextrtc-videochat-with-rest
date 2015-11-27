@@ -1,15 +1,11 @@
 package org.nextrtc.examples.videochat_with_rest.domain;
 
+import javax.persistence.*;
 import java.util.Set;
 
-import javax.persistence.*;
-
-import org.joda.time.DateTime;
+import static javax.persistence.CascadeType.PERSIST;
 
 @Entity
-// @NamedQueries({ //
-// @NamedQuery(name = "membersSize", query = "select count(c.members) from Conversation c where c.rtcId = :rtcId") //
-// })
 public class Conversation {
 
     @Id
@@ -18,11 +14,28 @@ public class Conversation {
 
     private String roomName;
 
-    private DateTime startDate;
+    @OneToOne(cascade = PERSIST)
+    private CreationDetails created;
 
-    private DateTime endDate;
+//    @OneToOne(cascade = CascadeType.)
+    private DestroyDetails ended;
 
     @OneToMany
-    private Set<Member> members;
+    private Set<Connection> connections;
 
+    Conversation(){}
+
+    public Conversation(String roomName){
+        this.roomName = roomName;
+        created = new CreationDetails();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("(%s)[%s - %s]", roomName, created, ended);
+    }
+
+    public void markEnd() {
+        ended = new DestroyDetails();
+    }
 }

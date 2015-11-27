@@ -1,11 +1,12 @@
 package org.nextrtc.examples.videochat_with_rest.domain;
 
-import javax.persistence.*;
-
 import lombok.Getter;
+import org.nextrtc.signalingserver.api.dto.NextRTCMember;
 
-import org.joda.time.DateTime;
-import org.nextrtc.signalingserver.api.NextRTCEvent;
+import javax.persistence.*;
+import java.util.Optional;
+
+import static javax.persistence.CascadeType.PERSIST;
 
 @Entity
 public class Member {
@@ -14,18 +15,17 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
-    @Getter
-    private DateTime created = DateTime.now();
-
-    @Getter
-    private DateTime finished;
-
-    private String login;
-
     private String rtcId;
 
-    @ManyToOne
-    private Conversation conv;
+    @Getter
+    @OneToOne(cascade = PERSIST)
+    private CreationDetails created;
+
+    @OneToOne
+    private DestroyDetails destroyed;
+
+    @OneToOne
+    private Connection connection;
 
     /**
      * for hibernate only
@@ -34,25 +34,28 @@ public class Member {
     Member() {
     }
 
-    public Member(NextRTCEvent event) {
-        event.getSessionId().ifPresent(id -> this.rtcId = id);
+    public Member(NextRTCMember from) {
+        this.rtcId = from.getId();
+        this.created = new CreationDetails();
     }
 
-    public boolean hasConnection() {
+    private boolean isAttached() {
         return rtcId != null;
     }
 
-    public boolean hasConversation() {
-        return hasConnection() && conv != null;
+    public boolean hasConnection() {
+        return isAttached() && connection != null;
     }
 
-    public void markEnd() {
-        finished = DateTime.now();
+    public void markEnd(Optional<String> cause) {
+        if (destroyed == null) {
+            destroyed = new DestroyDetails(cause);
+        }
     }
 
     @Override
     public String toString() {
-        return String.format("(%s, %s)[%s - %s]", id, rtcId, created, finished);
+        return String.format("(%s, %s)[%s - %s]", id, rtcId, created, destroyed);
     }
 
 }
