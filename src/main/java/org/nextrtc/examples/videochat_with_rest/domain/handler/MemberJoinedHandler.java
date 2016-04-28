@@ -1,7 +1,7 @@
-/* Copyright 2015 Sabre Holdings */
 package org.nextrtc.examples.videochat_with_rest.domain.handler;
 
-import org.nextrtc.examples.videochat_with_rest.repo.MemberRepository;
+import org.nextrtc.examples.videochat_with_rest.domain.handler.common.FromMemberHandler;
+import org.nextrtc.examples.videochat_with_rest.service.MemberJoinService;
 import org.nextrtc.signalingserver.api.annotation.NextRTCEventListener;
 import org.nextrtc.signalingserver.api.dto.NextRTCEvent;
 import org.nextrtc.signalingserver.api.dto.NextRTCMember;
@@ -12,14 +12,13 @@ import static org.nextrtc.signalingserver.api.NextRTCEvents.MEMBER_JOINED;
 
 @Component
 @NextRTCEventListener(MEMBER_JOINED)
-public class MemberJoinHandler extends FromMemberHandler {
+public class MemberJoinedHandler extends FromMemberHandler {
 
     @Autowired
-    private MemberRepository repo;
-
+    private MemberJoinService service;
 
     @Override
     protected void handleEvent(NextRTCMember from, NextRTCEvent event) {
-
+        event.conversation().ifPresent(conversation -> service.execute(from.getId(), conversation.getId()));
     }
 }

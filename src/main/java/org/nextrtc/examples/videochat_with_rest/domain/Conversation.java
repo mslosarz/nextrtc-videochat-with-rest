@@ -1,41 +1,60 @@
 package org.nextrtc.examples.videochat_with_rest.domain;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import org.joda.time.DateTime;
+
 import javax.persistence.*;
 import java.util.Set;
 
-import static javax.persistence.CascadeType.PERSIST;
+import static org.joda.time.DateTime.now;
 
 @Entity
+@Table(name = "Conversations")
+@EqualsAndHashCode(exclude = {"connections"})
 public class Conversation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+    @Column(name = "conversation_id")
+    private int id;
 
-    private String roomName;
+    @Column(name = "conversation_name")
+    private String conversationName;
 
-    @OneToOne(cascade = PERSIST)
-    private CreationDetails created;
+    @Getter
+    @Column(name = "created")
+    private DateTime created;
 
-//    @OneToOne(cascade = CascadeType.)
-    private DestroyDetails ended;
+    @Getter
+    @Column(name = "destroyed")
+    private DateTime destroyed;
 
-    @OneToMany
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Connection> connections;
 
-    Conversation(){}
+    @Deprecated
+    Conversation() {
+    }
 
-    public Conversation(String roomName){
-        this.roomName = roomName;
-        created = new CreationDetails();
+    public Conversation(String conversationName) {
+        this.conversationName = conversationName;
+        created = now();
     }
 
     @Override
     public String toString() {
-        return String.format("(%s)[%s - %s]", roomName, created, ended);
+        return String.format("(%s)[%s - %s]", conversationName, created, destroyed);
     }
 
-    public void markEnd() {
-        ended = new DestroyDetails();
+    public void destroy() {
+        destroyed = now();
+        connections.stream()
+                .filter(Connection::isClosed)
+                .forEach(Connection::close);
+    }
+
+    public void join(Member member) {
+        connections.add(new Connection(this, member));
     }
 }

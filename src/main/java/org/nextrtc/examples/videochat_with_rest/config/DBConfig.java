@@ -1,10 +1,6 @@
-package org.nextrtc.examples.videochat_with_rest;
+package org.nextrtc.examples.videochat_with_rest.config;
 
-import java.beans.PropertyVetoException;
-import java.util.Properties;
-
-import javax.persistence.EntityManagerFactory;
-
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.nextrtc.examples.videochat_with_rest.domain.Member;
 import org.nextrtc.examples.videochat_with_rest.repo.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +12,13 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
+import javax.persistence.EntityManagerFactory;
+import javax.sql.DataSource;
+import java.beans.PropertyVetoException;
+import java.util.Properties;
 
 @Configuration
 @EnableJpaRepositories(basePackageClasses = MemberRepository.class, transactionManagerRef = "NextRTCTransactionManager", entityManagerFactoryRef = "NextRTCEntityMangerFactory")
@@ -59,7 +59,7 @@ public class DBConfig {
     }
 
     @Bean(name = "NextRTCEntityMangerFactory")
-    public LocalContainerEntityManagerFactoryBean statsCollectorEntityManagerFactory() throws Exception {
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory() throws Exception {
         LocalContainerEntityManagerFactoryBean factoryBean = new LocalContainerEntityManagerFactoryBean();
         factoryBean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
         factoryBean.setJpaProperties(hibernateProperties());
@@ -70,9 +70,12 @@ public class DBConfig {
     }
 
     @Bean(name = "NextRTCTransactionManager")
-    public JpaTransactionManager statsCollectorTransactionManager(
-            @Qualifier("NextRTCEntityMangerFactory") EntityManagerFactory statsCollectorEntityManagerFactory) {
-        return new JpaTransactionManager(statsCollectorEntityManagerFactory);
+    public PlatformTransactionManager transactionManager(
+            @Qualifier("NextRTCEntityMangerFactory") EntityManagerFactory entityManagerFactory, @Qualifier("NextRTCDataSource") DataSource dataSource) {
+        final JpaTransactionManager transactionManager = new JpaTransactionManager();
+        transactionManager.setEntityManagerFactory(entityManagerFactory);
+        transactionManager.setDataSource(dataSource);
+        return transactionManager;
     }
 
 }

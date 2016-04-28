@@ -1,31 +1,46 @@
 package org.nextrtc.examples.videochat_with_rest.domain;
 
+import lombok.AccessLevel;
 import lombok.Getter;
-import org.nextrtc.signalingserver.api.dto.NextRTCMember;
+import lombok.Setter;
+import org.joda.time.DateTime;
 
 import javax.persistence.*;
 import java.util.Optional;
 
-import static javax.persistence.CascadeType.PERSIST;
+import static org.joda.time.DateTime.now;
 
 @Entity
+@Table(name = "Members")
 public class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+    @Column(name = "member_id")
+    private int id;
 
+    @Column(name = "member_rtc_id")
     private String rtcId;
 
     @Getter
-    @OneToOne(cascade = PERSIST)
-    private CreationDetails created;
+    @Column(name = "connected")
+    private DateTime connected;
 
-    @OneToOne
-    private DestroyDetails destroyed;
+    @Getter
+    @Column(name = "disconnected")
+    private DateTime disconnected;
 
-    @OneToOne
+    @Getter
+    @Setter(AccessLevel.PRIVATE)
+    @Column(name = "left_reason")
+    private String leftReason;
+
+    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY)
     private Connection connection;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     /**
      * for hibernate only
@@ -34,28 +49,25 @@ public class Member {
     Member() {
     }
 
-    public Member(NextRTCMember from) {
-        this.rtcId = from.getId();
-        this.created = new CreationDetails();
+    public Member(String memberId, User user) {
+        this.rtcId = memberId;
+        this.user = user;
+        this.connected = now();
     }
 
-    private boolean isAttached() {
-        return rtcId != null;
-    }
-
-    public boolean hasConnection() {
-        return isAttached() && connection != null;
-    }
-
-    public void markEnd(Optional<String> cause) {
-        if (destroyed == null) {
-            destroyed = new DestroyDetails(cause);
-        }
+    public void disconnectWithReason(Optional<String> reason) {
+        disconnected = now();
+        reason.ifPresent(this::setLeftReason);
     }
 
     @Override
     public String toString() {
-        return String.format("(%s, %s)[%s - %s]", id, rtcId, created, destroyed);
+        return String.format("(%s, %s)[%s - %s]", id, rtcId, connected, disconnected);
     }
 
+    public void leaves(Conversation conversation) {
+        if (connection.isFor(conversation)) {
+            connection.close();
+        }
+    }
 }
