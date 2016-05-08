@@ -21,5 +21,4 @@ public class SessionOpenedHandler extends FromMemberHandler {
     protected void handleEvent(NextRTCMember from, NextRTCEvent event) {
         service.execute(from);
     }
-
 }

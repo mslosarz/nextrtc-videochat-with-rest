@@ -1,5 +1,7 @@
 package org.nextrtc.examples.videochat_with_rest.domain;
 
+import lombok.Getter;
+
 import javax.persistence.*;
 import java.util.Set;
 
@@ -18,14 +20,19 @@ public class User {
     @Column(name = "password")
     private String password;
 
+    @Getter
+    @Column(name = "confirmation_key")
+    private String confirmationKey;
+
     @Column(name = "role")
     private String role = "USER";
 
+    @Getter
     @Column(name = "email")
     private String email;
 
     @Column(name = "confirmed")
-    private boolean confirmed = true; // TODO: change to false and add email service
+    private boolean confirmed = false;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private Set<Member> conversationMember;
@@ -34,9 +41,14 @@ public class User {
     User() {
     }
 
-    public User(String username, String password, String email) {
+    public User(String username, String password, String email, String confirmationKey) {
         this.username = username;
         this.password = password;
         this.email = email;
+        this.confirmationKey = confirmationKey;
+    }
+
+    public void confirmEmail() {
+        confirmed = true;
     }
 }
