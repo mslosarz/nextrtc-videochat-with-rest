@@ -8,9 +8,15 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.sun.mail.util.MailConnectException;
+
 import javax.transaction.Transactional;
+
 import java.util.UUID;
 
+import lombok.extern.log4j.Log4j;
+
+@Log4j
 @Service
 @Transactional
 public class RegisterUserService {
@@ -23,7 +29,11 @@ public class RegisterUserService {
     @Autowired
     private PasswordEncoder encoder;
 
-    public void register(String username, String password, String email) {
+    public String generateConfirmationKey() {
+    	return UUID.randomUUID().toString();
+    }
+    
+    public void register(String username, String password, String email, String confirmationKey) {
         if (userRepository.findByUsername(username).isPresent()) {
             throw new RuntimeException("user exists!");
         }
@@ -31,9 +41,14 @@ public class RegisterUserService {
             throw new RuntimeException("email is occupied!");
         }
 
-        User user = new User(username, encoder.encode(password), email, UUID.randomUUID().toString());
+        User user = new User(username, encoder.encode(password), email, confirmationKey);
+
         //TODO: call async
-        javaMailSender.send(prepareMail(user));
+        try {
+        	javaMailSender.send(prepareMail(user));
+        } catch (Throwable mailIssue ) {
+        	log.warn("Unable to send registration confirmation email", mailIssue);
+        }
 
         userRepository.save(user);
     }
