@@ -1,14 +1,13 @@
 /**
- * This library require adapter.js
+ * This library require https://webrtc.github.io/samples/src/js/adapter.js
  */
 // 'use strict';
-navigator.getUserMedia = getUserMedia;
 
-function Message(signal, to, content, parameters) {
+function Message(signal, to, content, custom) {
 	this.signal = signal;
 	this.to = to;
 	this.content = content;
-	this.parameters = parameters;
+	this.custom = custom;
 };
 
 function NextRTC(config) {
@@ -42,7 +41,7 @@ function NextRTC(config) {
 
 	this.join = function(convId) {
 		var nextRTC = this;
-		navigator.getUserMedia(nextRTC.mediaConfig, function(stream) {
+		navigator.mediaDevices.getUserMedia(nextRTC.mediaConfig).then(function(stream) {
 			nextRTC.localStream = stream;
 			nextRTC.call('localStream', {
 				stream : stream
@@ -51,19 +50,19 @@ function NextRTC(config) {
 		}, error);
 	};
 
-	this.create = function(convId) {
+	this.create = function(convId, custom) {
 		var nextRTC = this;
-		navigator.getUserMedia(nextRTC.mediaConfig, function(stream) {
+		navigator.mediaDevices.getUserMedia(nextRTC.mediaConfig).then(function(stream) {
 			nextRTC.localStream = stream;
 			nextRTC.call('localStream', {
 				stream : stream
 			});
-			nextRTC.request('create', null, convId);
+			nextRTC.request('create', null, convId, custom);
 		}, error);
 	};
 
-	this.request = function(signal, to, convId) {
-		var req = JSON.stringify(new Message(signal, to, convId));
+	this.request = function(signal, to, convId, custom) {
+		var req = JSON.stringify(new Message(signal, to, convId, custom));
 		console.log("res: " + req);
 		this.signaling.send(req);
 	};
@@ -93,14 +92,14 @@ function NextRTC(config) {
 			};
 			pc.onicecandidate = function(evt) {
 				handle(pc, evt);
-				
+
 				function handle(pc, evt){
-					if((pc.signalingState || pc.readyState) == 'stable' 
+					if((pc.signalingState || pc.readyState) == 'stable'
 						&& nextRTC.peerConnections[member]['rem'] == true){
-						handleCandidate(nextRTC, evt.candidate, member, pc);
+						nextRTC.onIceCandidate(nextRTC, member, evt);
 						return;
-					} 
-					setTimeout(function(){ handle(pc, evt); }, 2000);				
+					}
+					setTimeout(function(){ handle(pc, evt); }, 2000);
 				}
 			};
 			nextRTC.peerConnections[member] = {}
@@ -115,13 +114,15 @@ function NextRTC(config) {
 	};
 
 	this.offerResponse = function(nextRTC, signal) {
-		var pc = nextRTC.preparePeerConnection(nextRTC, signal.from);
-		pc['pc'].addStream(nextRTC.localStream);
-		pc['pc'].createOffer(function(desc) {
-			pc['pc'].setLocalDescription(desc, function() {
-				nextRTC.request('offerResponse', signal.from, desc.sdp);
-			}, error, success);
-		}, error);
+	    var pc = nextRTC.preparePeerConnection(nextRTC, signal.from);
+        		pc['pc'].addStream(nextRTC.localStream);
+        pc['pc'].createOffer({offerToReceiveAudio: 1, offerToReceiveVideo: 1})
+        .then(function(desc) {
+            pc['pc'].setLocalDescription(desc)
+                .then(function() {
+                    nextRTC.request('offerResponse', signal.from, desc.sdp);
+                }, error);
+        });
 	};
 
 	this.answerRequest = function(nextRTC, signal) {
@@ -134,37 +135,48 @@ function NextRTC(config) {
 		pc['pc'].setRemoteDescription(new RTCSessionDescription({
 			type : 'offer',
 			sdp : signal.content
-		}), function() {
-			pc['rem'] = true;
-			pc['pc'].createAnswer(function(desc) {
-				pc['pc'].setLocalDescription(desc, function() {
-					nextRTC.request('answerResponse', signal.from, desc.sdp);
-				}, error, success);
-			}, success, nextRTC.mediaConfig.sdpConstraints);
-		}, error);
+		})).then(function() {
+    		pc['rem'] = true;
+    		pc['pc'].createAnswer().then(function(desc) {
+    		    pc['pc'].setLocalDescription(desc).then(function() {
+        		    nextRTC.request('answerResponse', signal.from, desc.sdp);
+        	    });
+            });
+        });
 	};
 
 	this.finalize = function(nextRTC, signal) {
-		var pc = nextRTC.preparePeerConnection(nextRTC, signal.from);
+	    var pc = nextRTC.preparePeerConnection(nextRTC, signal.from);
 		pc['pc'].setRemoteDescription(new RTCSessionDescription({
 			type : 'answer',
 			sdp : signal.content
-		}), function(){
+		})).then(function(){
 			pc['rem'] = true;
-		}, error);
-	};
+		});
+    };
 
-	this.close = function(nextRTC, event) {
-		nextRTC.signaling.close();
-	};
-	
+    this.close = function(nextRTC, event) {
+        nextRTC.signaling.close();
+        if(nextRTC.localStream != null){
+            nextRTC.localStream.stop();
+        }
+    };
+
+    this.leave = function(){
+        var nextRTC = NextRTC.instance;
+        nextRTC.request('left');
+        nextRTC.signaling.close();
+        if(nextRTC.localStream != null){
+            nextRTC.localStream.stop();
+        }
+    };
+
 	this.candidate = function(nextRTC, signal) {
-		var pc = nextRTC.preparePeerConnection(nextRTC, signal.from);
-		pc['pc'].addIceCandidate(new RTCIceCandidate(JSON.parse(signal.content.replace(new RegExp('\'', 'g'), '"'))), success, error);
-	}
+	    var pc = nextRTC.preparePeerConnection(nextRTC, signal.from);
+   	    pc['pc'].addIceCandidate(new RTCIceCandidate(JSON.parse(signal.content.replace(new RegExp('\'', 'g'), '"'))), success, error);
+    }
 
 	this.init = function() {
-		this.on('created', this.created);
 		this.on('offerRequest', this.offerRequest);
 		this.on('answerRequest', this.answerRequest);
 		this.on('finalize', this.finalize);
@@ -173,11 +185,11 @@ function NextRTC(config) {
 		this.on('ping', function(){});
 	};
 
-	function handleCandidate(nextRTC, candidate, member, destPC) {
-		if (candidate) {
-			nextRTC.request('candidate', member, JSON.stringify(candidate));
-		}
-	};
+	this.onIceCandidate = function(nextRTC, member, event) {
+          if (event.candidate) {
+            nextRTC.request('candidate', member, JSON.stringify(event.candidate));
+          }
+        }
 
 	this.init();
 };

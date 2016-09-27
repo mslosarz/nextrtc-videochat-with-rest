@@ -6,7 +6,7 @@
 		<!-- Your own application should inherit from spring-boot-starter-parent -->
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.3.3.RELEASE</version>
+		<version>1.3.6.RELEASE</version>
 	</parent>
 	<artifactId>nextrtc-videochat-with-rest</artifactId>
 	<groupId>org.nextrtc.examples</groupId>
@@ -17,7 +17,6 @@
 	<version>1.0.0-SNAPSHOT</version>
 	<properties>
 		<main.basedir>${basedir}/../..</main.basedir>
-		<tomcat.version>9.0.0.M6</tomcat.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencies>
@@ -41,7 +40,7 @@
 		<dependency>
 			<groupId>org.nextrtc.signalingserver</groupId>
 			<artifactId>nextrtc-signaling-server</artifactId>
-			<version>0.0.3</version>
+			<version>0.0.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
