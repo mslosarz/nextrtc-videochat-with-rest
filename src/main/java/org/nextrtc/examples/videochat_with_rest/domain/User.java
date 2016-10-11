@@ -1,7 +1,5 @@
 package org.nextrtc.examples.videochat_with_rest.domain;
 
-import lombok.Getter;
-
 import javax.persistence.*;
 import java.util.Set;
 
@@ -20,14 +18,12 @@ public class User {
     @Column(name = "password")
     private String password;
 
-    @Getter
     @Column(name = "confirmation_key")
     private String confirmationKey;
 
     @Column(name = "role")
     private String role = "USER";
 
-    @Getter
     @Column(name = "email")
     private String email;
 
@@ -50,5 +46,13 @@ public class User {
 
     public void confirmEmail() {
         confirmed = true;
+    }
+
+    public String getConfirmationKey() {
+        return this.confirmationKey;
+    }
+
+    public String getEmail() {
+        return this.email;
     }
 }

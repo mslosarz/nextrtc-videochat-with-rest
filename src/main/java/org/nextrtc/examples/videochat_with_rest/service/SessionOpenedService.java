@@ -1,6 +1,6 @@
 package org.nextrtc.examples.videochat_with_rest.service;
 
-import lombok.extern.log4j.Log4j;
+import org.apache.log4j.Logger;
 import org.nextrtc.examples.videochat_with_rest.domain.Member;
 import org.nextrtc.examples.videochat_with_rest.domain.User;
 import org.nextrtc.examples.videochat_with_rest.repo.MemberRepository;
@@ -13,12 +13,12 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import javax.websocket.Session;
 
-@Log4j
 @Service
 @Transactional
 @PreAuthorize(value = "USER")
 public class SessionOpenedService {
 
+    private static final Logger log = Logger.getLogger(SessionOpenedService.class);
     @Autowired
     private MemberRepository memberRepository;
 

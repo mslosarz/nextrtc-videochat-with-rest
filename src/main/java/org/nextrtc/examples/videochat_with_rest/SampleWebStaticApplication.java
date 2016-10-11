@@ -10,8 +10,6 @@ import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfig
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
@@ -25,16 +23,13 @@ import org.springframework.context.annotation.Import;
         AppConfig.class,
         DBConfig.class,
         MvcConfig.class,
-        WebSecurityConfig.class
+        WebSecurityConfig.class,
 })
-public class SampleWebStaticApplication extends SpringBootServletInitializer {
+public class SampleWebStaticApplication {
 
     public static void main(String[] args) throws Exception {
         SpringApplication.run(SampleWebStaticApplication.class, args);
     }
-
-    @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(SampleWebStaticApplication.class);
-    }
 }
+
+

@@ -1,8 +1,5 @@
 package org.nextrtc.examples.videochat_with_rest.domain;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
 import org.joda.time.DateTime;
 
 import javax.persistence.*;
@@ -22,16 +19,12 @@ public class Member {
     @Column(name = "member_rtc_id")
     private String rtcId;
 
-    @Getter
     @Column(name = "connected")
     private DateTime connected;
 
-    @Getter
     @Column(name = "disconnected")
     private DateTime disconnected;
 
-    @Getter
-    @Setter(AccessLevel.PRIVATE)
     @Column(name = "left_reason")
     private String leftReason;
 
@@ -69,5 +62,21 @@ public class Member {
         if (connection.isFor(conversation)) {
             connection.close();
         }
+    }
+
+    public DateTime getConnected() {
+        return this.connected;
+    }
+
+    public DateTime getDisconnected() {
+        return this.disconnected;
+    }
+
+    public String getLeftReason() {
+        return this.leftReason;
+    }
+
+    private void setLeftReason(String leftReason) {
+        this.leftReason = leftReason;
     }
 }

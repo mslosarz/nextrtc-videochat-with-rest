@@ -1,6 +1,5 @@
 package org.nextrtc.examples.videochat_with_rest.domain;
 
-import lombok.Getter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -18,15 +17,12 @@ public class Connection {
     @JoinColumn(name = "connection_id")
     private int id;
 
-    @Getter
     @JoinColumn(name = "begin")
     private DateTime begin;
 
-    @Getter
     @JoinColumn(name = "closed")
     private DateTime closed;
 
-    @Getter
     @JoinColumn(name = "took")
     private long took;
 
@@ -61,5 +57,17 @@ public class Connection {
         return new EqualsBuilder()
                 .append(this.conversation, conversation)
                 .isEquals();
+    }
+
+    public DateTime getBegin() {
+        return this.begin;
+    }
+
+    public DateTime getClosed() {
+        return this.closed;
+    }
+
+    public long getTook() {
+        return this.took;
     }
 }
