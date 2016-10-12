@@ -18,6 +18,9 @@ public class User {
     @Column(name = "password")
     private String password;
 
+    @Column(name = "auth_provider_id")
+    private String authProviderId;
+
     @Column(name = "confirmation_key")
     private String confirmationKey;
 
@@ -42,6 +45,13 @@ public class User {
         this.password = password;
         this.email = email;
         this.confirmationKey = confirmationKey;
+    }
+
+    public User(String username, String email, String authProviderId) {
+        this.username = username;
+        this.email = email;
+        this.authProviderId = authProviderId;
+        confirmed = true;
     }
 
     public void confirmEmail() {

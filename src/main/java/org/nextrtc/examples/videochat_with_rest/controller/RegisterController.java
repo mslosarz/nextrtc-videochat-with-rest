@@ -22,7 +22,7 @@ public class RegisterController {
         service.register(username, password, email, confirmationKey);
         
         model.addAttribute("key", confirmationKey);
-        
-        return "login";
+
+        return "loginPage";
     }
 }

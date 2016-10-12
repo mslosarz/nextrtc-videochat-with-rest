@@ -39,4 +39,17 @@ public class RegisterUserService {
 
         userRepository.save(user);
     }
+
+    public void register(String name, String email, String providerId) {
+        if (userRepository.findByUsername(name).isPresent()) {
+            throw new RuntimeException("user exists!");
+        }
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new RuntimeException("email is occupied!");
+        }
+
+        User user = new User(name, email, providerId);
+
+        userRepository.save(user);
+    }
 }

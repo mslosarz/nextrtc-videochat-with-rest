@@ -9,18 +9,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
-@RequestMapping("/action")
+@RequestMapping("/action/verify")
 public class VerificationController {
 
     @Autowired
     private VerifyUserService service;
 
-    @RequestMapping(value = "verify/{key}", method = RequestMethod.GET)
+    @RequestMapping(value = "{key}", method = RequestMethod.GET)
     public String verify(@PathVariable String key, Model model) {
 
         service.verify(key);
         
         model.addAttribute("key", null);
-        return "login";
+
+        return "loginPage";
     }
 }

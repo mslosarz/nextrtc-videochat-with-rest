@@ -7,6 +7,8 @@ import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceS
 import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -29,6 +31,7 @@ import org.springframework.web.filter.CompositeFilter;
 import javax.servlet.Filter;
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
@@ -43,8 +46,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/",
+                        "/processLogin",
                         "/login**",
                         "/register.html",
                         "/action/register",
@@ -56,19 +61,22 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .formLogin()
                 .loginPage("/loginPage")
+                .loginProcessingUrl("/processLogin")
                 .usernameParameter("username")
                 .passwordParameter("password")
-                .defaultSuccessUrl("/conversation.html")
-                .failureUrl("/login?error=true")
+                .defaultSuccessUrl("/")
+                .failureUrl("/loginPage?error=true")
                 .permitAll()
                 .and()
                 .logout()
+                .logoutUrl("/logout")
                 .logoutSuccessUrl("/loginPage")
                 .permitAll()
                 .and()
                 .addFilterBefore(ssoFilters(), BasicAuthenticationFilter.class)
-                .addFilterAfter(oAuth2ClientContextFilter(), SecurityContextPersistenceFilter.class);
+                .addFilterAfter(oAuth2ClientContextFilter, SecurityContextPersistenceFilter.class);
     }
+
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth.jdbcAuthentication()
@@ -79,12 +87,27 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
+    public FilterRegistrationBean oauth2ClientFilterRegistration(
+            OAuth2ClientContextFilter filter) {
+        FilterRegistrationBean registration = new FilterRegistrationBean();
+        registration.setFilter(filter);
+        registration.setOrder(-100);
+        return registration;
+    }
+
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Autowired
     private OAuth2ClientContext oauth2ClientContext;
+
+    @Autowired
+    private OAuth2ClientContextFilter oAuth2ClientContextFilter;
+
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Bean
     @ConfigurationProperties("github")
@@ -104,29 +127,25 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    OAuth2ClientContextFilter oAuth2ClientContextFilter() {
-        return new OAuth2ClientContextFilter();
-    }
-
-    @Bean
     public Filter ssoFilters() {
         CompositeFilter filter = new CompositeFilter();
         List<Filter> filters = Lists.newArrayList();
-        filters.add(ssoFilter(facebook(), "/login/facebook"));
-        filters.add(ssoFilter(github(), "/login/github"));
+        filters.add(ssoFilter(facebook(), "/login/facebook", "Facebook"));
+        filters.add(ssoFilter(github(), "/login/github", "GitHub"));
         filter.setFilters(filters);
         return filter;
     }
 
-    private Filter ssoFilter(ClientResources client, String path) {
+    private Filter ssoFilter(ClientResources client, String path, String provider) {
         OAuth2ClientAuthenticationProcessingFilter oAuth2ClientAuthenticationFilter = new OAuth2ClientAuthenticationProcessingFilter(
                 path);
         OAuth2RestTemplate oAuth2RestTemplate = new OAuth2RestTemplate(client.getClient(), oauth2ClientContext);
         oAuth2ClientAuthenticationFilter.setRestTemplate(oAuth2RestTemplate);
-        UserInfoTokenServices tokenServices = new UserInfoTokenServices(client.getResource().getUserInfoUri(),
-                client.getClient().getClientId());
+        CustomTokenService tokenServices = new CustomTokenService(client.getResource().getUserInfoUri(),
+                client.getClient().getClientId(), provider);
         tokenServices.setRestTemplate(oAuth2RestTemplate);
         oAuth2ClientAuthenticationFilter.setTokenServices(tokenServices);
+        oAuth2ClientAuthenticationFilter.setApplicationEventPublisher(applicationEventPublisher);
         return oAuth2ClientAuthenticationFilter;
     }
 
@@ -144,6 +163,21 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         public ResourceServerProperties getResource() {
             return resource;
+        }
+    }
+
+    class CustomTokenService extends UserInfoTokenServices {
+
+        private String provider;
+
+        public CustomTokenService(String userInfoEndpointUrl, String clientId, String provider) {
+            super(userInfoEndpointUrl, clientId);
+            this.provider = provider;
+        }
+
+        @Override
+        protected Object getPrincipal(Map<String, Object> map) {
+            return provider + "_" + map.getOrDefault("id", "unknown");
         }
     }
 }

@@ -27,7 +27,7 @@ ct?
 Enter key password for <tomcat> (RETURN if same as keystore password): <RETURN>
 
 then:
-- run: mvn clean install && java -jar target/videochat.war
+- run: mvn clean install && java -jar target/restvideochat.war
 - enter https://localhost:8433 in your favourite browser
 #### HTTPS is important, because default http handler isn't configured ####
 - accept untrusted certificate
@@ -35,3 +35,6 @@ then:
 ###############
 Sometimes websocket (js side) is throwing exception then try to change localhost to 127.0.0.1
 
+
+run with debug enabled on port 5005
+java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -jar target/restvideochat.war
