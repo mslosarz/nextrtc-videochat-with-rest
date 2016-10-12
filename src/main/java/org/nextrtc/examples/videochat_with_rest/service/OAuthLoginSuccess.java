@@ -2,7 +2,6 @@ package org.nextrtc.examples.videochat_with_rest.service;
 
 import org.apache.log4j.Logger;
 import org.nextrtc.examples.videochat_with_rest.domain.handler.ConversationCreatedHandler;
-import org.nextrtc.examples.videochat_with_rest.repo.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.InteractiveAuthenticationSuccessEvent;
@@ -21,9 +20,6 @@ public class OAuthLoginSuccess implements ApplicationListener<InteractiveAuthent
     @Autowired
     private RegisterUserService registerUserService;
 
-    @Autowired
-    private UserRepository userRepository;
-
     @Override
     public void onApplicationEvent(InteractiveAuthenticationSuccessEvent authenticationSuccessEvent) {
         Authentication authentication = authenticationSuccessEvent.getAuthentication();
@@ -33,9 +29,6 @@ public class OAuthLoginSuccess implements ApplicationListener<InteractiveAuthent
         OAuth2Authentication auth = (OAuth2Authentication) authentication;
         Map<String, String> details = (Map) auth.getUserAuthentication().getDetails();
         String complex = auth.getPrincipal().toString();
-        if (!userRepository.findByAuthProviderId(complex).isPresent()) {
-            registerUserService.register(details.get("name"), details.get("email"), complex);
-        }
-
+        registerUserService.register(details.get("name"), details.get("email"), complex);
     }
 }

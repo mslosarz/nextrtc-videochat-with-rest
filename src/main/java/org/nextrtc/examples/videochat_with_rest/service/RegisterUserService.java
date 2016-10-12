@@ -41,15 +41,8 @@ public class RegisterUserService {
     }
 
     public void register(String name, String email, String providerId) {
-        if (userRepository.findByUsername(name).isPresent()) {
-            throw new RuntimeException("user exists!");
+        if (!userRepository.findByAuthProviderId(providerId).isPresent()) {
+            userRepository.save(new User(name, email, providerId));
         }
-        if (userRepository.findByEmail(email).isPresent()) {
-            throw new RuntimeException("email is occupied!");
-        }
-
-        User user = new User(name, email, providerId);
-
-        userRepository.save(user);
     }
 }
