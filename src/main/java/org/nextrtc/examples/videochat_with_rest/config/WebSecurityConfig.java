@@ -49,7 +49,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/",
-                        "/processLogin",
+                        "/login",
                         "/login**",
                         "/register.html",
                         "/action/register",
@@ -60,17 +60,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticated()
                 .and()
                 .formLogin()
-                .loginPage("/loginPage")
-                .loginProcessingUrl("/processLogin")
+                .loginPage("/login.html")
+                .loginProcessingUrl("/login")
                 .usernameParameter("username")
                 .passwordParameter("password")
                 .defaultSuccessUrl("/")
-                .failureUrl("/loginPage?error=true")
+                .failureUrl("/login.html?error=true")
                 .permitAll()
                 .and()
                 .logout()
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/loginPage")
+                .logoutUrl("/logout.html")
+                .logoutSuccessUrl("/login.html")
                 .permitAll()
                 .and()
                 .addFilterBefore(ssoFilters(), BasicAuthenticationFilter.class)

@@ -1,14 +1,16 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<html>
 <head>
     <title>Registration</title>
 </head>
 <body>
-<form th:action="@{/action/register}" method="POST">
+<form action="/action/register" method="POST">
     <div><label>Name: <input type="text" name="username"/></label></div>
     <div><label>Email: <input type="email" name="email"/></label></div>
     <div><label>Password: <input type="password" name="password"/></label></div>
     <div><input type="submit" value="Register"/></div>
 </form>
+<a href="/login/facebook">Login with Facebook</a></br>
+<a href="/login/github">Login with GitHub</a>
 </body>
 </html>
