@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import javax.websocket.Session;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -44,6 +45,12 @@ public class SessionOpenedService {
     }
 
     private User getAuthenticatedUser(Session session) {
-        return userRepository.getByUsername(session.getUserPrincipal().getName());
+        String key = session.getUserPrincipal().getName();
+        Optional<User> byUsername = userRepository.findByUsername(key);
+        if (!byUsername.isPresent()) {
+            return userRepository.findByAuthProviderId(key).orElse(null);
+
+        }
+        return byUsername.get();
     }
 }

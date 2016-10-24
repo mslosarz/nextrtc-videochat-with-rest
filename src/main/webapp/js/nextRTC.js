@@ -1,7 +1,7 @@
 'use strict';
-require('webrtc-adapter');
+//require('webrtc-adapter');
 
-var nextRTC = function NextRTC(config) {
+var NextRTC = function NextRTC(config) {
     if (!(this instanceof NextRTC)) {
         return new NextRTC(config);
     }
@@ -13,6 +13,8 @@ var nextRTC = function NextRTC(config) {
     this.peerConnections = {};
     this.localStream = null;
     this.signals = {};
+    this.channelReady = false;
+    this.waiting = [];
 
     this.call = function(event, data) {
         for ( var signal in this.signals) {
@@ -29,14 +31,23 @@ var nextRTC = function NextRTC(config) {
             to: to,
             content: convId,
             custom: custom });
-        console.log("res: " + req);
-        this.signaling.send(req);
+        if(!this.channelReady){
+            this.waiting.push(req);
+        } else {
+            console.log("req: " + req);
+            this.signaling.send(req);
+        }
     };
 
     this.signaling.onmessage = function(event) {
-        console.log("req: " + event.data);
+        console.log("res: " + event.data);
         var signal = JSON.parse(event.data);
         that.call(signal.signal, signal);
+    };
+
+    this.signaling.onopen = function() {
+        console.log("channel ready");
+        that.setChannelReady();
     };
 
     this.signaling.onclose = function(event) {
@@ -46,6 +57,14 @@ var nextRTC = function NextRTC(config) {
     this.signaling.onerror = function(event) {
         that.call('error', event);
     };
+
+    this.setChannelReady = function() {
+        for(var w in that.waiting){
+            console.log("req: " + w);
+            that.signaling.send(w);
+        }
+        that.channelReady = true;
+    }
 
     this.preparePeerConnection = function(nextRTC, member) {
         if (nextRTC.peerConnections[member] == undefined) {
@@ -171,11 +190,11 @@ var nextRTC = function NextRTC(config) {
     }
 };
 
-nextRTC.prototype.on = function on(signal, operation) {
+NextRTC.prototype.on = function on(signal, operation) {
     this.signals[signal] = operation;
 };
 
-nextRTC.prototype.create = function create(convId, custom) {
+NextRTC.prototype.create = function create(convId, custom) {
     var nextRTC = this;
     navigator.mediaDevices.getUserMedia(nextRTC.mediaConfig).then(function(stream) {
     nextRTC.localStream = stream;
@@ -186,7 +205,7 @@ nextRTC.prototype.create = function create(convId, custom) {
     }, this.error);
 };
 
-nextRTC.prototype.join = function join(convId, custom) {
+NextRTC.prototype.join = function join(convId, custom) {
     var nextRTC = this;
     navigator.mediaDevices.getUserMedia(nextRTC.mediaConfig).then(function(stream) {
         nextRTC.localStream = stream;
@@ -197,7 +216,7 @@ nextRTC.prototype.join = function join(convId, custom) {
     }, this.error);
 };
 
-nextRTC.prototype.leave = function leave() {
+NextRTC.prototype.leave = function leave() {
     var nextRTC = this;
     nextRTC.request('left');
     nextRTC.signaling.close();
@@ -206,4 +225,5 @@ nextRTC.prototype.leave = function leave() {
     }
 };
 
-module.exports.NextRTC = nextRTC;
+
+//module.exports.NextRTC = NextRTC;

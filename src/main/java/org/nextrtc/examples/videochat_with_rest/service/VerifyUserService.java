@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -14,7 +15,9 @@ public class VerifyUserService {
     @Autowired
     private UserRepository userRepository;
 
-    public void verify(String key) {
-        userRepository.findByConfirmationKey(key).ifPresent(User::confirmEmail);
+    public boolean verify(String key) {
+        Optional<User> confirmationKey = userRepository.findByConfirmationKey(key);
+        confirmationKey.ifPresent(User::confirmEmail);
+        return confirmationKey.isPresent();
     }
 }

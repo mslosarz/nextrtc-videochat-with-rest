@@ -1,12 +1,13 @@
 package org.nextrtc.examples.videochat_with_rest.controller;
 
+import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.nextrtc.examples.videochat_with_rest.service.RegisterUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping("/action")
@@ -16,13 +17,13 @@ public class RegisterController {
     private RegisterUserService service;
 
     @RequestMapping(value = "register", method = RequestMethod.POST)
-    public String registerUser(@ModelAttribute("username") String username, @ModelAttribute("password") String password, @ModelAttribute("email") String email, Model model) {
-
-    	String confirmationKey = service.generateConfirmationKey();
+    @ResponseBody
+    public String registerUser(@ModelAttribute("username") String username, @ModelAttribute("password") String password, @ModelAttribute("email") String email, HttpServletRequest request) {
+        String confirmationKey = service.generateConfirmationKey();
         service.register(username, password, email, confirmationKey);
-        
-        model.addAttribute("key", confirmationKey);
-
-        return "loginPage";
+        String scheme = request.getScheme();
+        String serverName = request.getServerName();
+        int serverPort = request.getServerPort();
+        return scheme + "://" + serverName + ":" + serverPort + "/action/verify/" + confirmationKey;
     }
 }

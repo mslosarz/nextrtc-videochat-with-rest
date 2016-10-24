@@ -35,7 +35,6 @@ import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
-//TODO: Create active account after login
 @EnableOAuth2Client
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
@@ -64,7 +63,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .loginProcessingUrl("/login")
                 .usernameParameter("username")
                 .passwordParameter("password")
-                .defaultSuccessUrl("/")
+                .defaultSuccessUrl("/conversation.html")
                 .failureUrl("/login.html?error=true")
                 .permitAll()
                 .and()
