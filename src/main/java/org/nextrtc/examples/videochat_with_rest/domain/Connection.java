@@ -5,7 +5,10 @@ import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
 import javax.persistence.*;
+import java.util.Date;
+import java.util.List;
 
+import static java.util.stream.Collectors.toList;
 import static org.joda.time.DateTime.now;
 
 @Entity
@@ -18,10 +21,10 @@ public class Connection {
     private int id;
 
     @JoinColumn(name = "begin")
-    private DateTime begin;
+    private Date begin;
 
     @JoinColumn(name = "closed")
-    private DateTime closed;
+    private Date closed;
 
     @JoinColumn(name = "took")
     private long took;
@@ -41,7 +44,7 @@ public class Connection {
     Connection(Conversation conversation, Member member) {
         this.conversation = conversation;
         this.member = member;
-        begin = now();
+        begin = now().toDate();
     }
 
     public boolean isClosed() {
@@ -49,8 +52,8 @@ public class Connection {
     }
 
     public void close() {
-        closed = now();
-        took = new Interval(begin, closed).toDurationMillis();
+        closed = now().toDate();
+        took = new Interval(new DateTime(begin), new DateTime(closed)).toDurationMillis();
     }
 
     public boolean isFor(Conversation conversation) {
@@ -59,15 +62,7 @@ public class Connection {
                 .isEquals();
     }
 
-    public DateTime getBegin() {
-        return this.begin;
-    }
-
-    public DateTime getClosed() {
-        return this.closed;
-    }
-
-    public long getTook() {
-        return this.took;
+    public List<Member> getConversationMembers() {
+        return conversation.getConnections().stream().map(c -> c.member).collect(toList());
     }
 }

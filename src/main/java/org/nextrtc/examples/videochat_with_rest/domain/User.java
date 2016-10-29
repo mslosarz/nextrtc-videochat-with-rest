@@ -65,4 +65,8 @@ public class User {
     public String getEmail() {
         return this.email;
     }
+
+    public History prepareHistory() {
+        return new History(conversationMember);
+    }
 }

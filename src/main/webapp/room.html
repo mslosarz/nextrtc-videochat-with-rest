@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Room</title>
 </head>
 <body>
@@ -9,27 +10,41 @@
         <span>Give your friends this link: </span>
         <span id="joinLink"></span>
     </h2>
-    <video id="local" autoplay></video>
-    <video id="remote" autoplay></video>
+    <div id="container">
+
+    </div>
     <br/>
     <ul id="eventLog">
 
     </ul>
+    <div>
+        <video id="template" width="320" height="240" autoplay controls></video>
+    </div>
 </div>
 <script src="https://webrtc.github.io/samples/src/js/adapter.js"></script>
 <script src="js/nextRTC.js"></script>
 <script src="js/jquery-2.1.3.min.js"></script>
 <script>
+        var ws = getParam('ws');
+        if(ws !== ''){
+            ws = 'localhost';
+        } else {
+            ws = '192.168.42.174';
+        }
         var nextRTC = new NextRTC({
-            wsURL : 'wss://localhost:8433/signaling',
+            wsURL : 'wss://' + ws + ':8433/signaling',
             mediaConfig : {
                 video : true,
                 audio : true,
             },
             peerConfig : {
-                'iceServers' : [ {
-                    url : "stun:stun.l.google.com:19302"
-                } ]
+                iceServers: [
+                    {urls: "stun:23.21.150.121"},
+                    {urls: "stun:stun.l.google.com:19302"},
+                    {urls: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "louis@mozilla.com"}
+                ],
+                iceTransportPolicy:'all',
+                rtcpMuxPolicy:'negotiate'
             },
         });
 
@@ -38,23 +53,23 @@
             $('#eventLog').append('<li>' + 'Room with id ' + event.content + ' has been created, share it with your friend to start videochat' + '</li>')
         });
 
-        nextRTC.on('joined', function(nextRTC, event) {
+        nextRTC.on('newJoined', function(nextRTC, event) {
             console.log(JSON.stringify(event));
-            $('#eventLog').append('<li>' + 'Member with id ' + event.from + ' joined conversation' + '</li>')
+            $('#log').append('<li>Member with id ' + event.from + ' has joined conversation</li>');
         });
 
-        nextRTC.on('localStream', function(nextRTC, stream) {
-            window.stream = stream.stream; // make variable available to browser console
-            var video = $('#local')[0];
-            video.srcObject = stream.stream;
+        nextRTC.on('localStream', function(member, stream) {
+            var dest = $("#template").clone().prop({ id: 'local'});
+            $("#container").append(dest);
+            dest[0].srcObject = stream.stream;
             $('#eventLog').append('<li>Attached local media stream!</li>')
         });
 
-        nextRTC.on('remoteStream', function(nextRTC, stream) {
-            window.stream = stream.stream; // make variable available to browser console
-            var video = $('#remote')[0];
-            video.srcObject = stream.stream;
-            $('#eventLog').append('<li>Attached remote media stream!</li>')
+        nextRTC.on('remoteStream', function(member, stream) {
+            var dest = $("#template").clone().prop({ id: stream.member});
+            $("#container").append(dest);
+            dest[0].srcObject = stream.stream;
+            $('#eventLog').append('<li>Attached remote media stream from '+ stream.member +'!</li>')
         });
 
         nextRTC.on('left', function(nextRTC, event) {
@@ -62,18 +77,28 @@
             $('#eventLog').append('<li>'+ event.from +' has left the conversation</li>')
         });
 
-        var searchParams = new URLSearchParams(document.URL);
-        var type = searchParams.get('type');
-        var name = searchParams.get('name');
+        var type = getParam('type');
+        var name = getParam('name');
 
-        if(type != undefined){
+        if(type !== ''){
             nextRTC.create(name, {type : type});
         } else {
             nextRTC.join(name, {type : type});
         }
         $('#joinLink').append(location.protocol + '//' + location.host + location.pathname + '?name=' + name);
 
-
+        function getParam ( sname ) {
+              var params = location.search.substr(location.search.indexOf("?")+1);
+              var sval = "";
+              params = params.split("&");
+                // split param and value into individual pieces
+                for (var i=0; i<params.length; i++)
+                   {
+                     temp = params[i].split("=");
+                     if ( [temp[0]] == sname ) { sval = temp[1]; }
+                   }
+              return sval;
+        }
 </script>
 </body>
 </html>

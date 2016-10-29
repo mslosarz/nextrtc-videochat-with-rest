@@ -32,7 +32,9 @@ var NextRTC = function NextRTC(config) {
             content: convId,
             custom: custom });
         if(!this.channelReady){
-            this.waiting.push(req);
+            if(req.signal !== ''){
+                this.waiting.push(req);
+            }
         } else {
             console.log("req: " + req);
             this.signaling.send(req);
@@ -58,7 +60,7 @@ var NextRTC = function NextRTC(config) {
         that.call('error', event);
     };
 
-    this.setChannelReady = function() {
+    this.setChannelReady = function(){
         for(var w in that.waiting){
             console.log("req: " + w);
             that.signaling.send(w);
@@ -224,6 +226,5 @@ NextRTC.prototype.leave = function leave() {
         nextRTC.localStream.stop();
     }
 };
-
 
 //module.exports.NextRTC = NextRTC;

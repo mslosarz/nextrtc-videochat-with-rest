@@ -1,15 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Registration</title>
 </head>
 <body>
-<form action="/action/register" method="POST">
+<form id="register" action="/action/register" method="POST">
     <div><label>Name: <input type="text" name="username"/></label></div>
     <div><label>Email: <input type="email" name="email"/></label></div>
     <div><label>Password: <input type="password" name="password"/></label></div>
     <div><input type="submit" value="Register"/></div>
 </form>
+<div id="confirm">
+
+</div>
+<script src="js/jquery-2.1.3.min.js"></script>
+<script>
+    $('#register').submit(function(event) {
+        event.preventDefault();
+        $('#confirm').append('Processing...</br>');
+        $.post( "/action/register", $('#register').serialize(), function( data ) {
+            $('#confirm').append('Now you can verify your account without email verification!</br>');
+            $('#confirm').append('<a href="' + data + '" target="_blank">Verify!</a></br>');
+            $('#confirm').append('</br><a href="conversation.html">Create conversation</a></br></br>');
+        });
+    });
+
+</script>
 <a href="/login/facebook">Login with Facebook</a></br>
 <a href="/login/github">Login with GitHub</a>
 </body>

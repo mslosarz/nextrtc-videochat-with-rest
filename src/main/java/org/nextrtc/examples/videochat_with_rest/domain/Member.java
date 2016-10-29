@@ -1,6 +1,6 @@
 package org.nextrtc.examples.videochat_with_rest.domain;
 
-import org.joda.time.DateTime;
+import org.nextrtc.examples.videochat_with_rest.domain.history.Call;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -65,19 +65,21 @@ public class Member {
         }
     }
 
-    public DateTime getConnected() {
-        return new DateTime(this.connected);
-    }
-
-    public DateTime getDisconnected() {
-        return new DateTime(this.disconnected);
-    }
-
-    public String getLeftReason() {
-        return this.leftReason;
-    }
-
     private void setLeftReason(String leftReason) {
         this.leftReason = leftReason;
     }
+
+    public int startedBefore(Member p) {
+        return connected.compareTo(p.connected);
+    }
+
+    public Call toCall() {
+//        List<Member> members = connection.getConversationMembers().stream()
+//                .filter(m -> !m.equals(this))
+//                .map(m -> m.rtcId)
+//                .collect(toList());
+//        return new Call();
+        return null;
+    }
+
 }
