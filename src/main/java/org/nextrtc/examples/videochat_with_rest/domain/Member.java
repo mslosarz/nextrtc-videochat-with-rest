@@ -1,8 +1,11 @@
 package org.nextrtc.examples.videochat_with_rest.domain;
 
+import org.joda.time.DateTime;
+import org.joda.time.Interval;
 import org.nextrtc.examples.videochat_with_rest.domain.history.Call;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -76,12 +79,25 @@ public class Member {
     }
 
     public Call toCall() {
-        List<String> members = connection.getConversationMembers().stream()
-                .filter(m -> !m.equals(this))
-                .map(m -> m.rtcId)
-                .collect(toList());
-        return new Call(members);
-//        return null;
+        if (connection != null) {
+            List<String> members = connection.getConversationMembers().stream()
+                    .filter(m -> !m.equals(this))
+                    .map(m -> m.rtcId)
+                    .collect(toList());
+            return new Call(members, connection.isClosed(), connection.getBegin(), connection.getDuration());
+        } else {
+            return new Call(new ArrayList<>(), true, connected, getDuration());
+        }
     }
 
+    private Long getDuration() {
+        if (disconnected == null) {
+            return null;
+        }
+        return new Interval(new DateTime(connected), new DateTime(disconnected)).toDurationMillis();
+    }
+
+    public String getUsername() {
+        return user.getUsername();
+    }
 }

@@ -27,7 +27,7 @@ public class Connection {
     private Date closed;
 
     @JoinColumn(name = "took")
-    private long took;
+    private Long took;
 
     @OneToOne
     @JoinColumn(name = "member_id")
@@ -64,5 +64,13 @@ public class Connection {
 
     public List<Member> getConversationMembers() {
         return conversation.getConnections().stream().map(c -> c.member).collect(toList());
+    }
+
+    public Date getBegin() {
+        return begin;
+    }
+
+    public Long getDuration() {
+        return took;
     }
 }

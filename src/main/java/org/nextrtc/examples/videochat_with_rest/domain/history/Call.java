@@ -4,10 +4,36 @@ import java.util.Date;
 import java.util.List;
 
 public class Call {
-    private List<String> others;
+    private List<String> otherRtcIds;
     private Date started;
-    private int duration;
+    private Long duration;
+    private boolean inProgress;
+    private List<String> otherNames;
 
-    public Call(List<String> others) {
+    public Call(List<String> members, boolean closed, Date begin, Long duration) {
+        this.otherRtcIds = members;
+        this.started = begin;
+        this.duration = duration;
+        this.inProgress = !closed;
+    }
+
+    public List<String> getOtherRtcIds() {
+        return otherRtcIds;
+    }
+
+    public Date getStarted() {
+        return started;
+    }
+
+    public Long getDuration() {
+        return duration;
+    }
+
+    public boolean isInProgress() {
+        return inProgress;
+    }
+
+    public void setOtherNames(List<String> otherNames) {
+        this.otherNames = otherNames;
     }
 }

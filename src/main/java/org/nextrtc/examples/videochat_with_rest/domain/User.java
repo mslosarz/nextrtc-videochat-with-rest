@@ -56,6 +56,10 @@ public class User {
         confirmed = true;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
     public void confirmEmail() {
         confirmed = true;
     }

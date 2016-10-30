@@ -17,4 +17,8 @@ public class History {
         sortedMembers.sort(Member::startedBefore);
         calls = sortedMembers.stream().map(Member::toCall).collect(toList());
     }
+
+    public List<Call> getCalls() {
+        return calls;
+    }
 }
