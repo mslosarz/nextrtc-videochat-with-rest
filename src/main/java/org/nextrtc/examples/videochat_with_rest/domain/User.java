@@ -1,5 +1,7 @@
 package org.nextrtc.examples.videochat_with_rest.domain;
 
+import org.nextrtc.examples.videochat_with_rest.domain.history.History;
+
 import javax.persistence.*;
 import java.util.Set;
 
@@ -56,14 +58,6 @@ public class User {
 
     public void confirmEmail() {
         confirmed = true;
-    }
-
-    public String getConfirmationKey() {
-        return this.confirmationKey;
-    }
-
-    public String getEmail() {
-        return this.email;
     }
 
     public History prepareHistory() {

@@ -6,7 +6,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
 
-@RestController("/action/check")
+@RestController
+@RequestMapping("/action/check")
 public class CheckMyName {
 
     @RequestMapping(value = "name", method = RequestMethod.GET)

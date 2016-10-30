@@ -4,8 +4,10 @@ import org.nextrtc.examples.videochat_with_rest.domain.history.Call;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
+import static java.util.stream.Collectors.toList;
 import static org.joda.time.DateTime.now;
 
 @Entity
@@ -74,12 +76,12 @@ public class Member {
     }
 
     public Call toCall() {
-//        List<Member> members = connection.getConversationMembers().stream()
-//                .filter(m -> !m.equals(this))
-//                .map(m -> m.rtcId)
-//                .collect(toList());
-//        return new Call();
-        return null;
+        List<String> members = connection.getConversationMembers().stream()
+                .filter(m -> !m.equals(this))
+                .map(m -> m.rtcId)
+                .collect(toList());
+        return new Call(members);
+//        return null;
     }
 
 }

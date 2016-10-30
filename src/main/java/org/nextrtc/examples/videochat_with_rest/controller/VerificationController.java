@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController("/action/verify")
+@RestController
+@RequestMapping("/action/verify")
 public class VerificationController {
 
     @Autowired
