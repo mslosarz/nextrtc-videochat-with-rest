@@ -33,6 +33,10 @@ public class Call {
         return inProgress;
     }
 
+    public List<String> getOtherNames() {
+        return otherNames;
+    }
+
     public void setOtherNames(List<String> otherNames) {
         this.otherNames = otherNames;
     }

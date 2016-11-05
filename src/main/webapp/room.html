@@ -17,6 +17,7 @@
     <ul id="eventLog">
 
     </ul>
+    <a href="logout.html">Logout</a>
     <div>
         <video id="template" width="320" height="240" autoplay controls></video>
     </div>
@@ -25,14 +26,8 @@
 <script src="js/nextRTC.js"></script>
 <script src="js/jquery-2.1.3.min.js"></script>
 <script>
-        var ws = getParam('ws');
-        if(ws !== ''){
-            ws = 'localhost';
-        } else {
-            ws = '192.168.42.174';
-        }
         var nextRTC = new NextRTC({
-            wsURL : 'wss://' + ws + ':8433/signaling',
+            wsURL : 'wss://localhost:8433/signaling',
             mediaConfig : {
                 video : true,
                 audio : true,
