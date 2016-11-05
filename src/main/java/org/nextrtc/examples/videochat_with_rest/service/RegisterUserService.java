@@ -1,6 +1,6 @@
 package org.nextrtc.examples.videochat_with_rest.service;
 
-import lombok.extern.log4j.Log4j;
+import org.apache.log4j.Logger;
 import org.nextrtc.examples.videochat_with_rest.domain.User;
 import org.nextrtc.examples.videochat_with_rest.repo.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,11 +10,11 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.UUID;
 
-@Log4j
 @Service
 @Transactional
 public class RegisterUserService {
 
+    private static final Logger log = Logger.getLogger(RegisterUserService.class);
     @Autowired
     private UserRepository userRepository;
 
@@ -38,5 +38,11 @@ public class RegisterUserService {
         //TODO: send email
 
         userRepository.save(user);
+    }
+
+    public void register(String name, String email, String providerId) {
+        if (!userRepository.findByAuthProviderId(providerId).isPresent()) {
+            userRepository.save(new User(name, email, providerId));
+        }
     }
 }

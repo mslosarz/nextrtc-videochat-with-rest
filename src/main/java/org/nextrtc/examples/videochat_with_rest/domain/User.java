@@ -1,6 +1,6 @@
 package org.nextrtc.examples.videochat_with_rest.domain;
 
-import lombok.Getter;
+import org.nextrtc.examples.videochat_with_rest.domain.history.History;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -20,14 +20,15 @@ public class User {
     @Column(name = "password")
     private String password;
 
-    @Getter
+    @Column(name = "auth_provider_id")
+    private String authProviderId;
+
     @Column(name = "confirmation_key")
     private String confirmationKey;
 
     @Column(name = "role")
     private String role = "USER";
 
-    @Getter
     @Column(name = "email")
     private String email;
 
@@ -48,7 +49,22 @@ public class User {
         this.confirmationKey = confirmationKey;
     }
 
+    public User(String username, String email, String authProviderId) {
+        this.username = username;
+        this.email = email;
+        this.authProviderId = authProviderId;
+        confirmed = true;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
     public void confirmEmail() {
         confirmed = true;
+    }
+
+    public History prepareHistory() {
+        return new History(conversationMember);
     }
 }

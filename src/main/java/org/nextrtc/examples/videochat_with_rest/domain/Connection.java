@@ -1,12 +1,14 @@
 package org.nextrtc.examples.videochat_with_rest.domain;
 
-import lombok.Getter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
 import javax.persistence.*;
+import java.util.Date;
+import java.util.List;
 
+import static java.util.stream.Collectors.toList;
 import static org.joda.time.DateTime.now;
 
 @Entity
@@ -18,17 +20,14 @@ public class Connection {
     @JoinColumn(name = "connection_id")
     private int id;
 
-    @Getter
     @JoinColumn(name = "begin")
-    private DateTime begin;
+    private Date begin;
 
-    @Getter
     @JoinColumn(name = "closed")
-    private DateTime closed;
+    private Date closed;
 
-    @Getter
     @JoinColumn(name = "took")
-    private long took;
+    private Long took;
 
     @OneToOne
     @JoinColumn(name = "member_id")
@@ -45,7 +44,7 @@ public class Connection {
     Connection(Conversation conversation, Member member) {
         this.conversation = conversation;
         this.member = member;
-        begin = now();
+        begin = now().toDate();
     }
 
     public boolean isClosed() {
@@ -53,13 +52,25 @@ public class Connection {
     }
 
     public void close() {
-        closed = now();
-        took = new Interval(begin, closed).toDurationMillis();
+        closed = now().toDate();
+        took = new Interval(new DateTime(begin), new DateTime(closed)).toDurationMillis();
     }
 
     public boolean isFor(Conversation conversation) {
         return new EqualsBuilder()
                 .append(this.conversation, conversation)
                 .isEquals();
+    }
+
+    public List<Member> getConversationMembers() {
+        return conversation.getConnections().stream().map(c -> c.member).collect(toList());
+    }
+
+    public Date getBegin() {
+        return begin;
+    }
+
+    public Long getDuration() {
+        return took;
     }
 }

@@ -1,13 +1,16 @@
 package org.nextrtc.examples.videochat_with_rest.domain;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
 import org.joda.time.DateTime;
+import org.joda.time.Interval;
+import org.nextrtc.examples.videochat_with_rest.domain.history.Call;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
+import static java.util.stream.Collectors.toList;
 import static org.joda.time.DateTime.now;
 
 @Entity
@@ -22,16 +25,12 @@ public class Member {
     @Column(name = "member_rtc_id")
     private String rtcId;
 
-    @Getter
     @Column(name = "connected")
-    private DateTime connected;
+    private Date connected;
 
-    @Getter
     @Column(name = "disconnected")
-    private DateTime disconnected;
+    private Date disconnected;
 
-    @Getter
-    @Setter(AccessLevel.PRIVATE)
     @Column(name = "left_reason")
     private String leftReason;
 
@@ -52,11 +51,11 @@ public class Member {
     public Member(String memberId, User user) {
         this.rtcId = memberId;
         this.user = user;
-        this.connected = now();
+        this.connected = now().toDate();
     }
 
     public void disconnectWithReason(Optional<String> reason) {
-        disconnected = now();
+        disconnected = now().toDate();
         reason.ifPresent(this::setLeftReason);
     }
 
@@ -69,5 +68,36 @@ public class Member {
         if (connection.isFor(conversation)) {
             connection.close();
         }
+    }
+
+    private void setLeftReason(String leftReason) {
+        this.leftReason = leftReason;
+    }
+
+    public int startedBefore(Member p) {
+        return connected.compareTo(p.connected);
+    }
+
+    public Call toCall() {
+        if (connection != null) {
+            List<String> members = connection.getConversationMembers().stream()
+                    .filter(m -> !m.equals(this))
+                    .map(m -> m.rtcId)
+                    .collect(toList());
+            return new Call(members, connection.isClosed(), connection.getBegin(), connection.getDuration());
+        } else {
+            return new Call(new ArrayList<>(), true, connected, getDuration());
+        }
+    }
+
+    private Long getDuration() {
+        if (disconnected == null) {
+            return null;
+        }
+        return new Interval(new DateTime(connected), new DateTime(disconnected)).toDurationMillis();
+    }
+
+    public String getUsername() {
+        return user.getUsername();
     }
 }

@@ -1,11 +1,11 @@
 package org.nextrtc.examples.videochat_with_rest.config;
 
-import org.nextrtc.signalingserver.NextRTCConfig;
-import org.springframework.context.annotation.Configuration;
 import org.nextrtc.examples.videochat_with_rest.MyEndpoint;
+import org.nextrtc.signalingserver.NextRTCConfig;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
-import org.springframework.context.annotation.Bean;
 
 @Configuration
 @Import(NextRTCConfig.class)
