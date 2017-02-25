@@ -70,7 +70,10 @@ public class Connection {
         return begin;
     }
 
-    public Long getDuration() {
-        return took;
+    public long getDuration() {
+        if (took != null) {
+            return took;
+        }
+        return new Interval(new DateTime(begin), DateTime.now()).toDurationMillis();
     }
 }

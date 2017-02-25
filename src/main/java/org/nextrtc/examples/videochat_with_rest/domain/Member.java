@@ -84,15 +84,15 @@ public class Member {
                     .filter(m -> !m.equals(this))
                     .map(m -> m.rtcId)
                     .collect(toList());
-            return new Call(members, connection.isClosed(), connection.getBegin(), connection.getDuration());
+            return new Call(members, !connection.isClosed(), connection.getBegin(), connection.getDuration());
         } else {
-            return new Call(new ArrayList<>(), true, connected, getDuration());
+            return new Call(new ArrayList<>(), false, connected, getDuration());
         }
     }
 
-    private Long getDuration() {
+    private long getDuration() {
         if (disconnected == null) {
-            return null;
+            return new Interval(new DateTime(connected), DateTime.now()).toDurationMillis();
         }
         return new Interval(new DateTime(connected), new DateTime(disconnected)).toDurationMillis();
     }
