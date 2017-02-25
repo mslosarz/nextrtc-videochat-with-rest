@@ -22,6 +22,9 @@ public class ConversationCreatedHandler extends ConversationHandler {
 
     @Override
     protected void handleEvent(NextRTCConversation rtcConversation, NextRTCEvent event) {
-        log.info("Created conversation: " + repo.save(new Conversation(rtcConversation.getId())));
+        Conversation conversation = repo.getByConversationName(rtcConversation.getId());
+        if (conversation == null) {
+            log.info("Created conversation: " + repo.save(new Conversation(rtcConversation.getId())));
+        }
     }
 }
